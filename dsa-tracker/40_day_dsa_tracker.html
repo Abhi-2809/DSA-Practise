@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>40-Day DSA Challenge Tracker</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f5f6fa;
+            --card-background: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #dcdde1;
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            width: 95%;
+            max-width: 1400px;
+        }
+
+        .day {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .day:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .day label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .day input[type="text"],
+        .day input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin: 5px 0;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .day input[type="text"]:focus,
+        .day input[type="number"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .day input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 10px auto;
+            cursor: pointer;
+            accent-color: var(--success-color);
+        }
+
+        #reset {
+            margin-top: 40px;
+            padding: 12px 30px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #reset:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>40-Day DSA Challenge Tracker</h1>
+    
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-value" id="completedDays">0</div>
+            <div class="stat-label">Days Completed</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="totalQuestions">0</div>
+            <div class="stat-label">Total Questions</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="totalTime">0h</div>
+            <div class="stat-label">Total Time</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="grid" id="trackerGrid"></div>
+    <button id="reset">Reset Progress</button>
+
+    <script>
+        const grid = document.getElementById('trackerGrid');
+        const resetButton = document.getElementById('reset');
+        const progressFill = document.getElementById('progressFill');
+        const completedDaysElement = document.getElementById('completedDays');
+        const totalQuestionsElement = document.getElementById('totalQuestions');
+        const totalTimeElement = document.getElementById('totalTime');
+
+        function updateStats() {
+            let completed = 0;
+            let totalQuestions = 0;
+            let totalTime = 0;
+
+            for (let i = 1; i <= 40; i++) {
+                if (localStorage.getItem(`day${i}`) === 'true') {
+                    completed++;
+                }
+                const questions = parseInt(localStorage.getItem(`questions${i}`)) || 0;
+                totalQuestions += questions;
+                
+                const timeStr = localStorage.getItem(`time${i}`);
+                if (timeStr) {
+                    const hours = parseFloat(timeStr) || 0;
+                    totalTime += hours;
+                }
+            }
+
+            const progress = (completed / 40) * 100;
+            progressFill.style.width = `${progress}%`;
+            completedDaysElement.textContent = completed;
+            totalQuestionsElement.textContent = totalQuestions;
+            totalTimeElement.textContent = `${totalTime.toFixed(1)}h`;
+        }
+
+        for (let i = 1; i <= 40; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.classList.add('day');
+
+            const label = document.createElement('label');
+            label.textContent = `Day ${i}`;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `day${i}`;
+
+            const practiceInput = document.createElement('input');
+            practiceInput.type = 'text';
+            practiceInput.id = `practice${i}`;
+            practiceInput.placeholder = 'What did you practice?';
+
+            const timeInput = document.createElement('input');
+            timeInput.type = 'text';
+            timeInput.id = `time${i}`;
+            timeInput.placeholder = 'Time spent (e.g., 2 hours)';
+
+            const questionsInput = document.createElement('input');
+            questionsInput.type = 'number';
+            questionsInput.id = `questions${i}`;
+            questionsInput.placeholder = 'Number of questions';
+            questionsInput.min = '0';
+
+            // Load saved data
+            const savedCheckbox = localStorage.getItem(`day${i}`);
+            const savedPractice = localStorage.getItem(`practice${i}`);
+            const savedTime = localStorage.getItem(`time${i}`);
+            const savedQuestions = localStorage.getItem(`questions${i}`);
+
+            if (savedCheckbox === 'true') {
+                checkbox.checked = true;
+            }
+            if (savedPractice) practiceInput.value = savedPractice;
+            if (savedTime) timeInput.value = savedTime;
+            if (savedQuestions) questionsInput.value = savedQuestions;
+
+            // Add event listeners
+            const updateData = () => {
+                localStorage.setItem(`day${i}`, checkbox.checked);
+                localStorage.setItem(`practice${i}`, practiceInput.value);
+                localStorage.setItem(`time${i}`, timeInput.value);
+                localStorage.setItem(`questions${i}`, questionsInput.value);
+                updateStats();
+            };
+
+            checkbox.addEventListener('change', updateData);
+            practiceInput.addEventListener('change', updateData);
+            timeInput.addEventListener('change', updateData);
+            questionsInput.addEventListener('change', updateData);
+
+            dayDiv.appendChild(label);
+            dayDiv.appendChild(checkbox);
+            dayDiv.appendChild(practiceInput);
+            dayDiv.appendChild(timeInput);
+            dayDiv.appendChild(questionsInput);
+            grid.appendChild(dayDiv);
+        }
+
+        resetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset your progress?')) {
+                for (let i = 1; i <= 40; i++) {
+                    localStorage.removeItem(`day${i}`);
+                    localStorage.removeItem(`practice${i}`);
+                    localStorage.removeItem(`time${i}`);
+                    localStorage.removeItem(`questions${i}`);
+                    document.getElementById(`day${i}`).checked = false;
+                    document.getElementById(`practice${i}`).value = '';
+                    document.getElementById(`time${i}`).value = '';
+                    document.getElementById(`questions${i}`).value = '';
+                }
+                updateStats();
+            }
+        });
+
+        // Initial stats update
+        updateStats();
+    </script>
+</body>
+</html>
