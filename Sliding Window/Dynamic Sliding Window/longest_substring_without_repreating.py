@@ -1,3 +1,4 @@
+# Longest substring without repeating characters - Leetcode 3
 class Solution:
     def lengthOfLongestSubstring(self, s: str) -> int:
 
