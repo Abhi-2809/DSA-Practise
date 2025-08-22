@@ -6,6 +6,8 @@ class MinStack:
 
     def push(self, val: int) -> None:
         self.stack.append(val)
+        # At every point store the new minimum value that corresponds in min_stack
+        # to the minimum when a new element is appended
         new_min = min(val,self.min_stack[-1] if self.min_stack else val)
         self.min_stack.append(new_min)
 
